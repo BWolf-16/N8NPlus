@@ -14,6 +14,7 @@ export default function App() {
   const [newContainerName, setNewContainerName] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [containerToDelete, setContainerToDelete] = useState(null);
+  const [openWindows, setOpenWindows] = useState(new Map()); // Track opened windows
 
   // Fetch data on component mount
   useEffect(() => {
@@ -131,6 +132,23 @@ export default function App() {
     try {
       await fetch(`${API_BASE}/stop/${name}`, { method: "POST" });
       fetchContainers();
+      
+      // Try to close the associated window if it exists and is still open
+      const windowToClose = openWindows.get(name);
+      if (windowToClose && !windowToClose.closed) {
+        try {
+          windowToClose.close();
+          // Remove from tracking
+          setOpenWindows(prev => {
+            const updated = new Map(prev);
+            updated.delete(name);
+            return updated;
+          });
+        } catch (err) {
+          // Window couldn't be closed (likely due to browser restrictions)
+          alert(`Container ${name} has been stopped. Please manually close the n8n browser window for this container.`);
+        }
+      }
     } catch (err) {
       console.error("Error stopping container:", err);
     }
@@ -145,8 +163,26 @@ export default function App() {
     if (!containerToDelete) return;
 
     try {
+      // Try to close any open window for this container
+      const windowToClose = openWindows.get(containerToDelete);
+      if (windowToClose && !windowToClose.closed) {
+        try {
+          windowToClose.close();
+        } catch (err) {
+          console.log("Could not close window automatically");
+        }
+      }
+      
       await fetch(`${API_BASE}/delete/${containerToDelete}`, { method: "POST" });
       fetchContainers();
+      
+      // Clean up window tracking
+      setOpenWindows(prev => {
+        const updated = new Map(prev);
+        updated.delete(containerToDelete);
+        return updated;
+      });
+      
       setShowDeleteModal(false);
       setContainerToDelete(null);
     } catch (err) {
@@ -210,7 +246,12 @@ export default function App() {
     
     // Open directly in a new browser window
     const url = `http://${inst.baseAddress || baseAddress}:${inst.port}`;
-    window.open(url, '_blank');
+    const newWindow = window.open(url, `n8n-${inst.name}`, 'width=1200,height=800');
+    
+    // Track the opened window
+    if (newWindow) {
+      setOpenWindows(prev => new Map(prev.set(inst.name, newWindow)));
+    }
   };
 
   return (
@@ -290,9 +331,13 @@ export default function App() {
             <div className="cards">
               {filteredInstances.map((inst) => {
                 const currentBaseAddress = inst.baseAddress || baseAddress;
+                const hasOpenWindow = openWindows.has(inst.name) && !openWindows.get(inst.name)?.closed;
                 return (
                   <div key={inst.name} className="card">
-                    <strong>{inst.name}</strong>
+                    <div className="card-header">
+                      <strong>{inst.name}</strong>
+                      {hasOpenWindow && <span className="window-indicator" title="Browser window is open">🔗</span>}
+                    </div>
                     <p>Port: {inst.port}</p>
                     <p>Address: {currentBaseAddress}</p>
                     <p>Status: <span className={inst.status === "running" ? "dot-green" : "dot-red"} /></p>
