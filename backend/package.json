@@ -1,0 +1,15 @@
+{
+  "name": "n8nplus-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dockerode": "^4.0.7",
+    "express": "^4.18.2",
+    "fs-extra": "^11.2.0",
+    "portfinder": "^1.0.37"
+  }
+}

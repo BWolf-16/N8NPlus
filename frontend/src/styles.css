@@ -15,6 +15,88 @@ header {
   justify-content: space-between;
   align-items: center;
 }
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.base-address-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.base-address-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+.edit-base-address {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.base-address-input {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  background: var(--card);
+  color: var(--text);
+}
+.conflicts-alert {
+  background: #ff6b6b;
+  color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+.conflict-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: rgba(255,255,255,0.1);
+  border-radius: 0.25rem;
+}
+.controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+.search-section {
+  flex: 1;
+  max-width: 300px;
+}
+.search-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  background: var(--card);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+.search-input:focus {
+  outline: none;
+  border-color: #007acc;
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.search-info {
+  font-size: 0.8rem;
+  color: #888;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 button {
   padding: 0.5rem 1rem;
   margin: 0.2rem;
@@ -31,8 +113,8 @@ button:hover {
   margin-top: 1rem;
 }
 .new-btn {
-  margin-bottom: 1rem;
   font-size: 1rem;
+  white-space: nowrap;
 }
 .cards {
   display: flex;
