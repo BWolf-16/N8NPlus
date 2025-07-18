@@ -59,8 +59,7 @@
             "x64"
           ]
         }
-      ],
-      "icon": "assets/icon.ico"
+      ]
     },
     "mac": {
       "target": [

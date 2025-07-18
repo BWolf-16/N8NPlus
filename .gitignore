@@ -1,1 +1,11 @@
 node_modules
+dist*/
+backend/node_modules/
+frontend/node_modules/
+frontend/build/
+backend/volumes/
+*.log
+
+# Keep only essential installer files for auto-update
+!dist*/N8NPlus*.exe
+!dist*/latest.yml
