@@ -7,6 +7,8 @@
     "setup-check": "node src/setup-manager.js check",
     "setup-unix": "chmod +x setup.sh && ./setup.sh",
     "setup-win": "setup.bat",
+    "icon-check": "node src/icon-generator.js",
+    "icon-test": "node src/icon-test.js",
     "prestart": "node src/setup-manager.js check",
     "start": "concurrently \"npm run backend\" \"npm run react-start\" \"npm run wait-and-electron\"",
     "backend": "cd backend && npm start",

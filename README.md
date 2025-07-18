@@ -156,8 +156,32 @@ N8NPlus includes intelligent dependency checking that runs automatically:
 ```bash
 npm run setup          # Full setup with dependency installation
 npm run setup-check    # Quick dependency check only
+npm run icon-check     # Check icon status and get setup instructions
 npm start              # Start the application (includes pre-check)
 ```
+
+## 🎨 Custom Application Icon
+
+N8NPlus supports custom application icons with automatic platform detection:
+
+### Icon Priority (by platform)
+- **Windows**: `icon.ico` → `icon.png` → `icon.svg` → default
+- **macOS**: `icon.icns` → `icon.png` → `icon.svg` → default  
+- **Linux**: `icon.png` → `icon.svg` → default
+
+### Quick Icon Setup
+1. Place your icon file in the `assets/` folder
+2. Name it according to your platform preference (see above)
+3. Run `npm run icon-check` to verify setup
+4. Restart the application to see your custom icon
+
+### Icon Requirements
+- **PNG**: 256x256 or 512x512 recommended
+- **ICO**: Multiple sizes (16x16 to 256x256) in one file
+- **ICNS**: macOS icon bundle with multiple resolutions
+- **SVG**: Vector format (fallback only)
+
+For detailed instructions, see `assets/README.md` or run `npm run icon-check`.
 
 ### Creating a New Container
 1. Click the **"+ Create Instance"** button
