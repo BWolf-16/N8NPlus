@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import SetupChecker from "../components/SetupChecker";
 
 const API_BASE = "http://localhost:9999/api";
 
@@ -15,21 +16,29 @@ export default function App() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [containerToDelete, setContainerToDelete] = useState(null);
   const [openWindows, setOpenWindows] = useState(new Map()); // Track opened windows
+  const [setupComplete, setSetupComplete] = useState(false); // Track setup status
 
   // Fetch data on component mount
   useEffect(() => {
-    fetchContainers();
-    fetchConfig();
-    checkConflicts();
-    
-    // Set up periodic refresh every 30 seconds
-    const interval = setInterval(() => {
+    // Only fetch data if setup is complete
+    if (setupComplete) {
       fetchContainers();
+      fetchConfig();
       checkConflicts();
-    }, 30000);
-    
-    return () => clearInterval(interval);
-  }, []);
+      
+      // Set up periodic refresh every 30 seconds
+      const interval = setInterval(() => {
+        fetchContainers();
+        checkConflicts();
+      }, 30000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [setupComplete]);
+
+  const handleSetupComplete = () => {
+    setSetupComplete(true);
+  };
 
   const fetchContainers = async () => {
     try {
@@ -256,6 +265,11 @@ export default function App() {
 
   return (
     <div className={dark ? "dark" : ""}>
+      {/* Show setup checker if setup is not complete */}
+      {!setupComplete && (
+        <SetupChecker onSetupComplete={handleSetupComplete} />
+      )}
+      
       <main className="app">
         <header>
           <h1>🐳 N8N+</h1>

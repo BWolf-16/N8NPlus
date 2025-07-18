@@ -1,6 +1,50 @@
-# 🐳 N8NPlus - Local n8n Container Manager
+# 🐳 N8NPlus - Local n8n Contain## 🌍 Platform Compatibility
 
-N8NPlus is a powerful Electron-based desktop application that simplifies managing multiple n8n (workflow automation) Docker containers locally. With an intuitive React frontend and robust Express backend, it provides dynamic port management, conflict resolution, and seamless container lifecycle management.
+N8NPlus is designed to work across multiple operating systems:
+
+### ✅ Fully Supported Platforms
+- **Windows 10/11** (x64, ARM64)
+- **macOS 10.15+** (Intel, Apple Silicon)
+- **Linux** (Ubuntu, Debian, Fedora, CentOS, Arch Linux)
+
+### 🔧 Platform-Specific Features
+- **Automatic dependency installation** on all platforms
+- **Native package managers**: Windows Installer, Homebrew (macOS), apt/dnf/pacman (Linux)
+- **Docker integration**: Docker Desktop (Windows/Mac), Docker Engine (Linux)
+- **Cross-platform file paths** and system commands
+
+### 🚀 Quick Setup (Recommended)
+
+N8NPlus now includes an **automatic dependency checker and installer** that will verify your system and install missing components for you!
+
+### Option 1: Auto-Setup (Cross-Platform)
+
+#### Windows:
+```bash
+# Run the setup script (will check and install everything)
+setup.bat
+# OR
+powershell -ExecutionPolicy Bypass -File setup.ps1
+# OR
+npm run setup-win
+```
+
+#### macOS/Linux:
+```bash
+# Make script executable and run setup
+chmod +x setup.sh && ./setup.sh
+# OR
+npm run setup-unix
+```
+
+#### Universal (All Platforms):
+```bash
+# Node.js-based setup (works everywhere)
+npm run setup
+```
+
+### Option 2: Manual Setup
+If you prefer to set up manually, follow the detailed installation steps below.N8NPlus is a powerful Electron-based desktop application that simplifies managing multiple n8n (workflow automation) Docker containers locally. With an intuitive React frontend and robust Express backend, it provides dynamic port management, conflict resolution, and seamless container lifecycle management.
 
 ## ✨ Features
 
@@ -18,6 +62,9 @@ N8NPlus is a powerful Electron-based desktop application that simplifies managin
 - **Persistent Configuration**: Saves container and configuration data in JSON files
 - **Dark/Light Theme**: Toggle between dark and light UI themes
 - **Real-time Updates**: Automatically refreshes container status every 30 seconds
+- **🆕 Auto-Setup & Dependency Checking**: Automatically checks and installs required dependencies
+- **🆕 Smart Dependency Management**: Detects missing Docker, Node.js, Git, and npm installations
+- **🆕 One-Click Installation**: Auto-downloads and installs missing dependencies with user permission
 
 ## 🛠️ Technology Stack
 
@@ -27,7 +74,22 @@ N8NPlus is a powerful Electron-based desktop application that simplifies managin
 - **Styling**: Custom CSS with modal components
 - **Data Persistence**: JSON file storage
 
-## 📋 Prerequisites
+## � Quick Setup (Recommended)
+
+N8NPlus now includes an **automatic dependency checker and installer** that will verify your system and install missing components for you!
+
+### Option 1: Auto-Setup (Windows)
+```bash
+# Run the setup script (will check and install everything)
+setup.bat
+# OR
+powershell -ExecutionPolicy Bypass -File setup.ps1
+```
+
+### Option 2: Manual Setup
+If you prefer to set up manually, follow the detailed installation steps below.
+
+## �📋 Prerequisites
 
 Before running N8NPlus, ensure you have:
 
@@ -79,6 +141,23 @@ This command will:
 - Open the Electron desktop application
 
 ## 🎮 Usage Guide
+
+### First-Time Setup
+N8NPlus includes intelligent dependency checking that runs automatically:
+
+1. **Automatic Dependency Check**: When you first run the app, it will check for all required dependencies
+2. **Interactive Setup**: If dependencies are missing, you'll see a setup dialog with options to:
+   - Auto-install missing dependencies (recommended)
+   - Open manual installation links
+   - Retry after manual installation
+3. **Docker Management**: The app can automatically start Docker Desktop if it's installed but not running
+
+### Available Commands
+```bash
+npm run setup          # Full setup with dependency installation
+npm run setup-check    # Quick dependency check only
+npm start              # Start the application (includes pre-check)
+```
 
 ### Creating a New Container
 1. Click the **"+ Create Instance"** button
