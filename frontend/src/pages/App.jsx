@@ -5,12 +5,15 @@ const API_BASE = "http://localhost:9999/api";
 export default function App() {
   const [dark, setDark] = useState(true);
   const [instances, setInstances] = useState([]);
-  const [activeInstance, setActiveInstance] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [baseAddress, setBaseAddress] = useState("localhost");
   const [editingBaseAddress, setEditingBaseAddress] = useState(false);
   const [conflicts, setConflicts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newContainerName, setNewContainerName] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [containerToDelete, setContainerToDelete] = useState(null);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -79,24 +82,40 @@ export default function App() {
   };
 
   const createContainer = async () => {
-    const name = prompt("Enter container name:");
-    if (!name) return;
+    if (!newContainerName.trim()) {
+      alert("Please enter a container name");
+      return;
+    }
 
     try {
       const response = await fetch(`${API_BASE}/containers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name })
+        body: JSON.stringify({ name: newContainerName.trim() })
       });
       
       if (response.ok) {
         fetchContainers();
+        setShowCreateModal(false);
+        setNewContainerName("");
       } else {
-        alert("Error creating container");
+        const errorText = await response.text();
+        alert(`Error creating container: ${errorText}`);
       }
     } catch (err) {
       console.error("Error creating container:", err);
+      alert("Error creating container");
     }
+  };
+
+  const openCreateModal = () => {
+    setNewContainerName("");
+    setShowCreateModal(true);
+  };
+
+  const closeCreateModal = () => {
+    setShowCreateModal(false);
+    setNewContainerName("");
   };
 
   const startContainer = async (name) => {
@@ -118,17 +137,27 @@ export default function App() {
   };
 
   const deleteContainer = async (name) => {
-    if (!confirm(`Delete container ${name}?`)) return;
-    
+    setContainerToDelete(name);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!containerToDelete) return;
+
     try {
-      await fetch(`${API_BASE}/delete/${name}`, { method: "POST" });
+      await fetch(`${API_BASE}/delete/${containerToDelete}`, { method: "POST" });
       fetchContainers();
-      if (activeInstance?.name === name) {
-        setActiveInstance(null);
-      }
+      setShowDeleteModal(false);
+      setContainerToDelete(null);
     } catch (err) {
       console.error("Error deleting container:", err);
+      alert("Error deleting container");
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setContainerToDelete(null);
   };
 
   const resolveConflict = async (name) => {
@@ -156,8 +185,33 @@ export default function App() {
   );
 
   const toggleTheme = () => setDark(!dark);
-  const handleOpen = (inst) => setActiveInstance(inst);
-  const handleClose = () => setActiveInstance(null);
+
+  const pingContainer = async (container) => {
+    try {
+      const response = await fetch(`${API_BASE}/ping/${container.name}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.accessible;
+      }
+      return false;
+    } catch (err) {
+      console.error("Error pinging container:", err);
+      return false;
+    }
+  };
+
+  const handleOpenWithCheck = async (inst) => {
+    // Check if container is accessible
+    const isAccessible = await pingContainer(inst);
+    if (!isAccessible) {
+      alert(`Container ${inst.name} is not responding. Please make sure it's started and wait a moment for n8n to initialize.`);
+      return;
+    }
+    
+    // Open directly in a new browser window
+    const url = `http://${inst.baseAddress || baseAddress}:${inst.port}`;
+    window.open(url, '_blank');
+  };
 
   return (
     <div className={dark ? "dark" : ""}>
@@ -215,7 +269,7 @@ export default function App() {
             )}
           </div>
           <div className="controls-row">
-            <button className="new-btn" onClick={createContainer}>+ Create Instance</button>
+            <button className="new-btn" onClick={openCreateModal}>+ Create Instance</button>
             <div className="search-section">
               <input
                 type="text"
@@ -245,7 +299,7 @@ export default function App() {
                     <div className="btn-row">
                       {inst.status === "running" ? (
                         <>
-                          <button onClick={() => handleOpen(inst)}>Open</button>
+                          <button onClick={() => handleOpenWithCheck(inst)}>Open</button>
                           <button onClick={() => stopContainer(inst.name)}>Stop</button>
                         </>
                       ) : (
@@ -263,17 +317,49 @@ export default function App() {
           )}
         </div>
 
-        {activeInstance && (
-          <div className="viewer">
-            <div className="viewer-bar">
-              <span>{activeInstance.name} ({(activeInstance.baseAddress || baseAddress)}:{activeInstance.port})</span>
-              <button onClick={handleClose}>×</button>
+        {/* Create Container Modal */}
+        {showCreateModal && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <h3>Create New Container</h3>
+              <div className="modal-content">
+                <label>Container Name:</label>
+                <input
+                  type="text"
+                  value={newContainerName}
+                  onChange={(e) => setNewContainerName(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && createContainer()}
+                  placeholder="e.g., n8n-production"
+                  className="modal-input"
+                  autoFocus
+                />
+              </div>
+              <div className="modal-buttons">
+                <button onClick={createContainer} disabled={!newContainerName.trim()}>
+                  Create
+                </button>
+                <button onClick={closeCreateModal}>Cancel</button>
+              </div>
             </div>
-            <iframe
-              src={`http://${activeInstance.baseAddress || baseAddress}:${activeInstance.port}`}
-              title={activeInstance.name}
-              className="viewer-frame"
-            />
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <h3>Confirm Delete</h3>
+              <div className="modal-content">
+                <p>Are you sure you want to delete container <strong>{containerToDelete}</strong>?</p>
+                <p style={{color: '#ff6b6b', fontSize: '0.9rem'}}>This action cannot be undone.</p>
+              </div>
+              <div className="modal-buttons">
+                <button onClick={confirmDelete} style={{background: '#ff6b6b'}}>
+                  Delete
+                </button>
+                <button onClick={cancelDelete}>Cancel</button>
+              </div>
+            </div>
           </div>
         )}
       </main>

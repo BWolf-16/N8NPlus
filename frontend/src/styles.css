@@ -97,6 +97,61 @@ button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: var(--card);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  min-width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+.modal h3 {
+  margin: 0 0 1.5rem 0;
+  color: var(--text);
+}
+.modal-content {
+  margin-bottom: 1.5rem;
+}
+.modal-content label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: var(--text);
+}
+.modal-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+.modal-input:focus {
+  outline: none;
+  border-color: #007acc;
+}
+.modal-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+.modal-buttons button {
+  padding: 0.75rem 1.5rem;
+}
 button {
   padding: 0.5rem 1rem;
   margin: 0.2rem;
@@ -165,9 +220,46 @@ button:hover {
   color: white;
   padding: 0.5rem 1rem;
 }
+.viewer-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.iframe-container {
+  position: relative;
+  flex: 1;
+}
+.iframe-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  color: var(--text);
+}
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 .viewer-frame {
   flex: 1;
   border: none;
+  width: 100%;
+  height: 100%;
 }
 :root {
   --bg: #f0f0f0;
