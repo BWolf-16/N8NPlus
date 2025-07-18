@@ -1,9 +1,11 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const ElectronSetupIntegration = require('./src/electron-setup');
+const AutoUpdater = require('./src/auto-updater');
 
 let setupIntegration;
+let autoUpdater;
 
 // Function to find the best available icon
 function getAppIcon() {
@@ -79,6 +81,147 @@ function createWindow() {
   
   // Initialize setup integration
   setupIntegration = new ElectronSetupIntegration();
+  
+  // Initialize auto-updater
+  autoUpdater = new AutoUpdater(win);
+  
+  // Create application menu with update check option
+  createApplicationMenu(win);
+  
+  // Check for updates on startup (only in production)
+  if (!process.env.ELECTRON_IS_DEV) {
+    autoUpdater.checkForUpdatesOnStartup();
+  }
+  
+  return win;
 }
 
-app.whenReady().then(createWindow);
+function createApplicationMenu(mainWindow) {
+  const template = [
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Reload',
+          accelerator: 'CmdOrCtrl+R',
+          click: () => {
+            mainWindow.reload();
+          }
+        },
+        {
+          label: 'Force Reload',
+          accelerator: 'CmdOrCtrl+Shift+R',
+          click: () => {
+            mainWindow.webContents.reloadIgnoringCache();
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'Exit',
+          accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
+          click: () => {
+            app.quit();
+          }
+        }
+      ]
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' }
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    },
+    {
+      label: 'Help',
+      submenu: [
+        {
+          label: 'Check for Updates',
+          click: () => {
+            if (autoUpdater) {
+              autoUpdater.checkForUpdates();
+            }
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'About N8NPlus',
+          click: () => {
+            const { dialog } = require('electron');
+            dialog.showMessageBox(mainWindow, {
+              type: 'info',
+              title: 'About N8NPlus',
+              message: 'N8NPlus v1.0.0',
+              detail: 'Local n8n Container Manager\n\nA powerful Electron-based desktop application for managing multiple n8n Docker containers.\n\nDeveloped by BWolf-16'
+            });
+          }
+        },
+        {
+          label: 'GitHub Repository',
+          click: () => {
+            const { shell } = require('electron');
+            shell.openExternal('https://github.com/BWolf-16/N8NPlus');
+          }
+        }
+      ]
+    }
+  ];
+
+  // macOS specific menu adjustments
+  if (process.platform === 'darwin') {
+    template.unshift({
+      label: app.getName(),
+      submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        { role: 'services', submenu: [] },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideOthers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    });
+  }
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+
+app.whenReady().then(() => {
+  createWindow();
+  
+  // Setup IPC handlers for auto-updater
+  ipcMain.handle('check-for-updates', async () => {
+    if (autoUpdater) {
+      autoUpdater.checkForUpdates();
+      return { success: true };
+    }
+    return { success: false, error: 'Auto-updater not initialized' };
+  });
+  
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});

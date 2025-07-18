@@ -1,26 +1,120 @@
 {
-  "name": "N8NPlus",
+  "name": "n8nplus",
   "version": "1.0.0",
+  "description": "Local n8n Container Manager - A powerful Electron-based desktop application for managing multiple n8n Docker containers",
   "main": "main.js",
+  "homepage": "https://github.com/BWolf-16/N8NPlus",
+  "author": {
+    "name": "BWolf-16",
+    "email": "your-email@example.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BWolf-16/N8NPlus.git"
+  },
   "scripts": {
     "setup": "node src/setup-manager.js full",
     "setup-check": "node src/setup-manager.js check",
-    "setup-unix": "chmod +x setup.sh && ./setup.sh",
-    "setup-win": "setup.bat",
-    "icon-check": "node src/icon-generator.js",
     "icon-test": "node src/icon-test.js",
-    "prestart": "node src/setup-manager.js check",
+    "generate-icons": "node src/generate-icons.js",
+    "version": "node -e \"console.log('N8NPlus v' + require('./package.json').version)\"",
     "start": "concurrently \"npm run backend\" \"npm run react-start\" \"npm run wait-and-electron\"",
     "backend": "cd backend && npm start",
     "react-start": "cd frontend && npm start",
-    "wait-and-electron": "wait-on http://localhost:3000 && wait-on http://localhost:9999 && electron ."
+    "wait-and-electron": "wait-on http://localhost:3000 && wait-on http://localhost:9999 && electron .",
+    "electron": "electron .",
+    "build": "npm run build-frontend && electron-builder",
+    "build-frontend": "cd frontend && npm run build",
+    "build-win": "npm run build-frontend && electron-builder --win",
+    "build-mac": "npm run build-frontend && electron-builder --mac",
+    "build-linux": "npm run build-frontend && electron-builder --linux",
+    "build-all": "npm run build-frontend && electron-builder --win --mac --linux",
+    "publish": "npm run build-frontend && electron-builder --publish=always",
+    "publish-win": "npm run build-frontend && electron-builder --win --publish=always",
+    "publish-mac": "npm run build-frontend && electron-builder --mac --publish=always",
+    "publish-linux": "npm run build-frontend && electron-builder --linux --publish=always"
+  },
+  "build": {
+    "appId": "com.bwolf16.n8nplus",
+    "productName": "N8NPlus",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json",
+      "src/**/*",
+      "backend/**/*",
+      "frontend/build/**/*",
+      "assets/icon.*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.png"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.png"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "BWolf-16",
+        "repo": "N8NPlus",
+        "releaseType": "release"
+      }
+    ],
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "dmg": {
+      "title": "N8NPlus Installer"
+    }
   },
   "dependencies": {
-    "electron": "^27.0.0",
-    "dockerode": "^4.0.7"
+    "dockerode": "^4.0.7",
+    "electron-log": "^5.4.1",
+    "electron-updater": "^6.6.2"
   },
   "devDependencies": {
     "concurrently": "^8.2.0",
+    "electron": "^27.0.0",
+    "electron-builder": "^26.0.12",
+    "electron-icon-maker": "^0.0.5",
+    "sharp": "^0.33.5",
     "wait-on": "^7.0.1"
   }
 }

@@ -9,3 +9,14 @@ contextBridge.exposeInMainWorld('electronSetup', {
   checkDockerStatus: () => ipcRenderer.invoke('check-docker-status'),
   startDocker: () => ipcRenderer.invoke('start-docker')
 });
+
+// Expose auto-updater functions to the renderer process
+contextBridge.exposeInMainWorld('electronAPI', {
+  onUpdateStatus: (callback) => {
+    ipcRenderer.on('update-status', callback);
+  },
+  removeUpdateStatusListener: (callback) => {
+    ipcRenderer.removeListener('update-status', callback);
+  },
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates')
+});

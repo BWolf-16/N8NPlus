@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import SetupChecker from "../components/SetupChecker";
+import UpdateNotification from "../components/UpdateNotification";
 
 const API_BASE = "http://localhost:9999/api";
 
@@ -265,6 +266,9 @@ export default function App() {
 
   return (
     <div className={dark ? "dark" : ""}>
+      {/* Update notification component */}
+      <UpdateNotification />
+      
       {/* Show setup checker if setup is not complete */}
       {!setupComplete && (
         <SetupChecker onSetupComplete={handleSetupComplete} />
