@@ -1,0 +1,35 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+}
+.app {
+  padding: 2rem;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: all 0.3s ease;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: #444;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+button:hover {
+  background: #666;
+}
+:root {
+  --bg: #f0f0f0;
+  --text: #000;
+}
+.dark {
+  --bg: #121212;
+  --text: #fff;
+}
