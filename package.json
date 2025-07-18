@@ -1,6 +1,6 @@
 {
   "name": "n8nplus",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Local n8n Container Manager - A powerful Electron-based desktop application for managing multiple n8n Docker containers",
   "main": "main.js",
   "homepage": "https://github.com/BWolf-16/N8NPlus",
