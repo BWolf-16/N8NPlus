@@ -100,6 +100,48 @@ function loadAppPreferences() {
   }
 }
 
+// Helper function to find the correct Node.js executable
+function getNodeExecutable() {
+  // On Windows, try common Node.js installation paths
+  if (process.platform === 'win32') {
+    const possiblePaths = [
+      'node.exe',
+      'node',
+      // Standard installation paths
+      path.join(process.env.ProgramFiles || 'C:\\Program Files', 'nodejs', 'node.exe'),
+      path.join(process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', 'nodejs', 'node.exe'),
+      // User installation paths
+      path.join(process.env.USERPROFILE || '', 'AppData', 'Roaming', 'npm', 'node.exe'),
+      path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Microsoft VS Code', 'bin', 'node.exe'),
+      // Current process path (if running from Electron with bundled Node)
+      process.execPath,
+      // Local node_modules (shouldn't exist but just in case)
+      path.join(__dirname, 'node_modules', '.bin', 'node.exe')
+    ];
+    
+    // Try each path to see if it exists and is executable
+    for (const nodePath of possiblePaths) {
+      try {
+        if (nodePath && fs.existsSync(nodePath)) {
+          console.log(`✅ Found Node.js at: ${nodePath}`);
+          // For Windows paths with spaces, we need to quote them when using with spawn
+          if (nodePath.includes(' ') && !nodePath.startsWith('"')) {
+            return `"${nodePath}"`;
+          }
+          return nodePath;
+        }
+      } catch (error) {
+        // Continue to next path
+      }
+    }
+    
+    console.log('⚠️ No specific Node.js executable found, using default...');
+  }
+  
+  // Default fallback - will work if node is in PATH
+  return 'node';
+}
+
 // Save application preferences to file
 function saveAppPreferences() {
   try {
@@ -356,12 +398,20 @@ function startBackendServer() {
       NODE_ENV: 'production'
     };
     
-    backendProcess = spawn('node', ['index.js'], {
+    // Get the correct Node.js executable
+    const nodeExecutable = getNodeExecutable();
+    console.log(`🔧 Using Node.js executable: ${nodeExecutable}`);
+    
+    // For paths with spaces, we need to quote them properly on Windows
+    const nodeArgs = ['index.js'];
+    const spawnOptions = {
       cwd: path.join(__dirname, 'backend'),
       shell: true,
       stdio: ['ignore', 'pipe', 'pipe'],
       env: env
-    });
+    };
+    
+    backendProcess = spawn(nodeExecutable, nodeArgs, spawnOptions);
 
     let resolved = false;
     let startupOutput = '';
@@ -402,7 +452,22 @@ function startBackendServer() {
       backendProcess = null;
       if (!resolved) {
         resolved = true;
-        reject(error);
+        
+        // Provide specific error messages for common issues
+        if (error.code === 'ENOENT') {
+          const errorMsg = `Node.js executable not found. Please ensure Node.js is installed and accessible.
+          
+Error Details: ${error.message}
+
+Possible Solutions:
+1. Install Node.js from https://nodejs.org/
+2. Restart your computer after installation
+3. Check that Node.js is in your system PATH
+4. Try running as administrator`;
+          reject(new Error(errorMsg));
+        } else {
+          reject(error);
+        }
       }
     });
 
@@ -449,12 +514,20 @@ function startFrontendServer() {
     // Set the frontend port via environment variable
     const env = { ...process.env, PORT: portPreferences.frontend.current.toString() };
     
-    frontendProcess = spawn('node', ['start-with-port.js'], {
+    // Get the correct Node.js executable
+    const nodeExecutable = getNodeExecutable();
+    console.log(`🌐 Using Node.js executable: ${nodeExecutable}`);
+    
+    // For paths with spaces, we need to quote them properly on Windows
+    const nodeArgs = ['start-with-port.js'];
+    const spawnOptions = {
       cwd: path.join(__dirname, 'frontend'),
       shell: true,
       stdio: ['ignore', 'pipe', 'pipe'],
       env: env
-    });
+    };
+    
+    frontendProcess = spawn(nodeExecutable, nodeArgs, spawnOptions);
 
     let resolved = false;
 
@@ -489,7 +562,22 @@ function startFrontendServer() {
       frontendProcess = null;
       if (!resolved) {
         resolved = true;
-        reject(error);
+        
+        // Provide specific error messages for common issues
+        if (error.code === 'ENOENT') {
+          const errorMsg = `Node.js executable not found. Please ensure Node.js is installed and accessible.
+          
+Error Details: ${error.message}
+
+Possible Solutions:
+1. Install Node.js from https://nodejs.org/
+2. Restart your computer after installation
+3. Check that Node.js is in your system PATH
+4. Try running as administrator`;
+          reject(new Error(errorMsg));
+        } else {
+          reject(error);
+        }
       }
     });
 

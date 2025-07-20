@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build N8NPlus v1.0.4",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build-win"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}
