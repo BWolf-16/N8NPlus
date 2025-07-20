@@ -21,6 +21,7 @@
     "network-scan": "node -e \"const NetworkUtils = require('./src/network-utils'); NetworkUtils.scanAllNetworks().then(devices => console.log('Found devices:', devices));\"",
     "network-info": "node -e \"const NetworkUtils = require('./src/network-utils'); console.log(JSON.stringify(NetworkUtils.getSystemInfo(), null, 2));\"",
     "version": "node -e \"console.log('N8NPlus v' + require('./package.json').version)\"",
+    "prepare-release": "node prepare-release.js",
     "start": "concurrently \"npm run backend\" \"npm run react-start\" \"npm run wait-and-electron\"",
     "backend": "cd backend && npm start",
     "react-start": "cd frontend && npm start",
