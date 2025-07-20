@@ -58,6 +58,9 @@
       "assets/icon.*",
       "node/**/*"
     ],
+    "asarUnpack": [
+      "node/**/*"
+    ],
     "win": {
       "target": [
         {

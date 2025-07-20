@@ -140,11 +140,24 @@ function spawnNodeProcess(nodeExecutable, args, options) {
 
 // Helper function to find the correct Node.js executable
 function getNodeExecutable() {
-  // First, try bundled Node.js (if we package it with the app)
-  const bundledNodePath = path.join(__dirname, 'node', 'node.exe');
-  if (fs.existsSync(bundledNodePath)) {
-    console.log(`✅ Using bundled Node.js: ${bundledNodePath}`);
-    return bundledNodePath;
+  // Define possible bundled Node.js paths for different environments
+  const possibleBundledPaths = [
+    // Production: unpacked from asar
+    path.join(__dirname, '..', 'app.asar.unpacked', 'node', 'node.exe'),
+    // Production: alternative unpacked location
+    path.join(process.resourcesPath, 'app.asar.unpacked', 'node', 'node.exe'),
+    // Development: local node directory
+    path.join(__dirname, 'node', 'node.exe'),
+    // Alternative production path
+    path.join(path.dirname(process.execPath), 'resources', 'app.asar.unpacked', 'node', 'node.exe')
+  ];
+  
+  // Try each bundled path
+  for (const nodePath of possibleBundledPaths) {
+    if (fs.existsSync(nodePath)) {
+      console.log(`✅ Using bundled Node.js: ${nodePath}`);
+      return nodePath;
+    }
   }
   
   // Second, try using Electron's bundled Node.js
