@@ -102,51 +102,70 @@ function loadAppPreferences() {
 
 // Helper function to spawn Node.js processes with better Windows compatibility
 function spawnNodeProcess(nodeExecutable, args, options) {
-  // First try: Use explicit shell path
+  console.log(`🔧 Attempting to spawn: ${nodeExecutable} ${args.join(' ')}`);
+  
+  // Remove quotes from nodeExecutable for direct execution
+  const cleanNodeExecutable = nodeExecutable.replace(/"/g, '');
+  
+  // First try: Direct execution without shell (most reliable)
+  try {
+    console.log(`🔧 Trying direct execution: ${cleanNodeExecutable}`);
+    return spawn(cleanNodeExecutable, args, { ...options, shell: false });
+  } catch (error) {
+    console.log(`⚠️ Direct execution failed: ${error.message}`);
+  }
+  
+  // Second try: Use explicit shell path
   try {
     if (process.platform === 'win32') {
       const shellPath = process.env.ComSpec || 'C:\\Windows\\System32\\cmd.exe';
+      console.log(`🔧 Trying with shell: ${shellPath}`);
       if (fs.existsSync(shellPath)) {
         return spawn(nodeExecutable, args, { ...options, shell: shellPath });
       }
     }
   } catch (error) {
-    console.log('First spawn attempt failed, trying fallback...');
+    console.log(`⚠️ Shell execution failed: ${error.message}`);
   }
   
-  // Second try: Use shell: true
+  // Third try: Use shell: true as last resort
   try {
+    console.log(`🔧 Trying shell: true`);
     return spawn(nodeExecutable, args, { ...options, shell: true });
   } catch (error) {
-    console.log('Second spawn attempt failed, trying without shell...');
-  }
-  
-  // Third try: No shell (for cases where Node.js is directly executable)
-  try {
-    // Remove quotes from nodeExecutable if present
-    const cleanNodeExecutable = nodeExecutable.replace(/"/g, '');
-    return spawn(cleanNodeExecutable, args, { ...options, shell: false });
-  } catch (error) {
-    console.log('All spawn attempts failed');
-    throw error;
+    console.log(`⚠️ Shell: true failed: ${error.message}`);
+    throw new Error(`All spawn attempts failed. Last error: ${error.message}`);
   }
 }
 
 // Helper function to find the correct Node.js executable
 function getNodeExecutable() {
+  // First, try bundled Node.js (if we package it with the app)
+  const bundledNodePath = path.join(__dirname, 'node', 'node.exe');
+  if (fs.existsSync(bundledNodePath)) {
+    console.log(`✅ Using bundled Node.js: ${bundledNodePath}`);
+    return bundledNodePath;
+  }
+  
+  // Second, try using Electron's bundled Node.js
+  const electronNodePath = process.execPath;
+  if (electronNodePath && fs.existsSync(electronNodePath)) {
+    console.log(`✅ Using Electron's Node.js: ${electronNodePath}`);
+    return electronNodePath;
+  }
+  
   // On Windows, try common Node.js installation paths
   if (process.platform === 'win32') {
     const possiblePaths = [
-      'node.exe',
-      'node',
-      // Standard installation paths
+      // Standard installation paths (without quotes first for direct execution)
       path.join(process.env.ProgramFiles || 'C:\\Program Files', 'nodejs', 'node.exe'),
       path.join(process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', 'nodejs', 'node.exe'),
       // User installation paths
       path.join(process.env.USERPROFILE || '', 'AppData', 'Roaming', 'npm', 'node.exe'),
       path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Microsoft VS Code', 'bin', 'node.exe'),
-      // Current process path (if running from Electron with bundled Node)
-      process.execPath,
+      // Try node in PATH
+      'node.exe',
+      'node',
       // Local node_modules (shouldn't exist but just in case)
       path.join(__dirname, 'node_modules', '.bin', 'node.exe')
     ];
@@ -156,10 +175,7 @@ function getNodeExecutable() {
       try {
         if (nodePath && fs.existsSync(nodePath)) {
           console.log(`✅ Found Node.js at: ${nodePath}`);
-          // For Windows paths with spaces, we need to quote them when using with spawn
-          if (nodePath.includes(' ') && !nodePath.startsWith('"')) {
-            return `"${nodePath}"`;
-          }
+          // Return the path without quotes for direct execution compatibility
           return nodePath;
         }
       } catch (error) {

@@ -22,6 +22,9 @@
     "network-info": "node -e \"const NetworkUtils = require('./src/network-utils'); console.log(JSON.stringify(NetworkUtils.getSystemInfo(), null, 2));\"",
     "version": "node -e \"console.log('N8NPlus v' + require('./package.json').version)\"",
     "prepare-release": "node prepare-release.js",
+    "bundle-nodejs": "node bundle-nodejs.js",
+    "build-with-nodejs": "npm run bundle-nodejs && npm run build",
+    "build-win-with-nodejs": "npm run bundle-nodejs && npm run build-win",
     "start": "concurrently \"npm run backend\" \"npm run react-start\" \"npm run wait-and-electron\"",
     "backend": "cd backend && npm start",
     "react-start": "cd frontend && npm start",
@@ -52,7 +55,8 @@
       "src/**/*",
       "backend/**/*",
       "frontend/build/**/*",
-      "assets/icon.*"
+      "assets/icon.*",
+      "node/**/*"
     ],
     "win": {
       "target": [

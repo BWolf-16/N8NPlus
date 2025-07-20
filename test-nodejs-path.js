@@ -8,9 +8,7 @@ console.log('=====================================');
 function getNodeExecutable() {
   if (process.platform === 'win32') {
     const possiblePaths = [
-      'node.exe',
-      'node',
-      // Standard installation paths
+      // Standard installation paths (without quotes first for direct execution)
       path.join(process.env.ProgramFiles || 'C:\\Program Files', 'nodejs', 'node.exe'),
       path.join(process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', 'nodejs', 'node.exe'),
       // User installation paths
@@ -18,6 +16,9 @@ function getNodeExecutable() {
       path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Microsoft VS Code', 'bin', 'node.exe'),
       // Current process path (if running from Electron with bundled Node)
       process.execPath,
+      // Try node in PATH
+      'node.exe',
+      'node',
       // Local node_modules (shouldn't exist but just in case)
       path.join(__dirname, 'node_modules', '.bin', 'node.exe')
     ];
@@ -29,10 +30,7 @@ function getNodeExecutable() {
       try {
         if (nodePath && fs.existsSync(nodePath)) {
           console.log(`✅ Found: ${nodePath}`);
-          // For Windows paths with spaces, we need to quote them when using with spawn
-          if (nodePath.includes(' ') && !nodePath.startsWith('"')) {
-            return `"${nodePath}"`;
-          }
+          // Return the path without quotes for direct execution compatibility
           return nodePath;
         } else {
           console.log(`❌ Not found: ${nodePath || 'undefined'}`);
@@ -69,31 +67,43 @@ const { spawn } = require('child_process');
 
 console.log('\n🧪 Testing spawn functionality...');
 try {
-  // Try multiple spawn approaches for better compatibility
-  let testProcess;
+  console.log(`🔧 Testing Node.js executable: ${nodeExecutable}`);
   
-  if (process.platform === 'win32') {
-    // First try: Use explicit ComSpec
-    const shellPath = process.env.ComSpec || 'C:\\Windows\\System32\\cmd.exe';
-    console.log(`Using shell: ${shellPath}`);
+  // Try direct execution first (most reliable)
+  let testProcess;
+  try {
+    console.log('🔧 Trying direct execution (shell: false)...');
+    testProcess = spawn(nodeExecutable, ['--version'], {
+      shell: false,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+    console.log('✅ Direct execution started successfully');
+  } catch (error) {
+    console.log(`⚠️ Direct execution failed: ${error.message}`);
     
-    try {
-      testProcess = spawn(nodeExecutable, ['--version'], {
-        shell: shellPath,
-        stdio: ['ignore', 'pipe', 'pipe']
-      });
-    } catch (error) {
-      console.log('First attempt failed, trying shell: true...');
+    // Fallback to shell execution
+    if (process.platform === 'win32') {
+      const shellPath = process.env.ComSpec || 'C:\\Windows\\System32\\cmd.exe';
+      console.log(`🔧 Trying with shell: ${shellPath}`);
+      
+      try {
+        testProcess = spawn(`"${nodeExecutable}"`, ['--version'], {
+          shell: shellPath,
+          stdio: ['ignore', 'pipe', 'pipe']
+        });
+      } catch (shellError) {
+        console.log(`⚠️ Shell execution failed: ${shellError.message}`);
+        testProcess = spawn(nodeExecutable, ['--version'], {
+          shell: true,
+          stdio: ['ignore', 'pipe', 'pipe']
+        });
+      }
+    } else {
       testProcess = spawn(nodeExecutable, ['--version'], {
         shell: true,
         stdio: ['ignore', 'pipe', 'pipe']
       });
     }
-  } else {
-    testProcess = spawn(nodeExecutable, ['--version'], {
-      shell: true,
-      stdio: ['ignore', 'pipe', 'pipe']
-    });
   }
 
   testProcess.stdout.on('data', (data) => {
