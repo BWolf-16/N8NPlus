@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N8NPlus Loading</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .loading-container {
+            max-width: 600px;
+            padding: 40px;
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .title {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            opacity: 0.7;
+            font-weight: normal;
+        }
+
+        .loading-box {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 30px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: white;
+            width: 0%;
+            border-radius: 3px;
+            animation: progress 8s ease-in-out infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            25% { width: 30%; }
+            50% { width: 60%; }
+            75% { width: 85%; }
+            100% { width: 100%; }
+        }
+
+        .status {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-top: 20px;
+        }
+
+        .steps {
+            text-align: left;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-top: 20px;
+        }
+
+        .steps ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .steps li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .steps li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+        }
+
+        .version {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        .manual-controls {
+            margin-top: 30px;
+            opacity: 0;
+            animation: fadeIn 2s ease-in-out 10s forwards;
+        }
+
+        .manual-controls button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin: 0 5px;
+            transition: background 0.3s ease;
+        }
+
+        .manual-controls button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <div class="logo">🔧</div>
+        <div class="title">N8NPlus</div>
+        <div class="subtitle">Docker n8n Container Manager</div>
+        
+        <div class="loading-box">
+            <div class="spinner"></div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            
+            <div class="status" id="status">Initializing application...</div>
+            
+            <div class="steps">
+                <ul>
+                    <li>Loading user preferences</li>
+                    <li>Checking for available ports</li>
+                    <li>Starting backend and frontend servers</li>
+                    <li>Establishing connections</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="manual-controls">
+            <p style="opacity: 0.8; font-size: 0.9rem;">Taking longer than expected?</p>
+            <button onclick="window.location.reload()">Refresh</button>
+            <button onclick="openServerMenu()">Server Menu</button>
+        </div>
+    </div>
+
+    <div class="version">v1.0.4</div>
+
+    <script>
+        const statusMessages = [
+            "Initializing application...",
+            "Loading preferences and configuration...",
+            "Checking for running servers...",
+            "Scanning for available ports...",
+            "Starting backend services...",
+            "Starting frontend interface...",
+            "Establishing server connections...",
+            "Finalizing startup process...",
+            "Almost ready..."
+        ];
+
+        let currentMessage = 0;
+        const statusElement = document.getElementById('status');
+
+        function updateStatus() {
+            if (currentMessage < statusMessages.length) {
+                statusElement.textContent = statusMessages[currentMessage];
+                currentMessage++;
+            } else {
+                statusElement.textContent = "Please wait while servers initialize...";
+            }
+        }
+
+        // Update status every 2 seconds
+        const statusInterval = setInterval(updateStatus, 2000);
+
+        function openServerMenu() {
+            // This would be handled by the main process
+            console.log('Server menu requested');
+        }
+
+        // Auto-refresh after 30 seconds if still loading
+        setTimeout(() => {
+            if (document.body) {
+                statusElement.textContent = "Auto-refreshing...";
+                setTimeout(() => window.location.reload(), 2000);
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
+
+        // Auto-refresh after 15 seconds if still on loading page
+        setTimeout(() => {
+            window.location.reload();
+        }, 15000);
+    </script>
+</body>
+</html>

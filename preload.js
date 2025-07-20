@@ -24,5 +24,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Network functions
   connectToHost: (host, port) => ipcRenderer.invoke('connect-to-host', { host, port }),
   scanNetwork: () => ipcRenderer.invoke('scan-network'),
-  getCurrentHost: () => ipcRenderer.invoke('get-current-host')
+    getCurrentHost: () => ipcRenderer.invoke('get-current-host'),
+  
+  // Server management functions
+  startServers: () => ipcRenderer.invoke('start-servers'),
+  stopServers: () => ipcRenderer.invoke('stop-servers'),
+  restartServers: () => ipcRenderer.invoke('restart-servers'),
+  checkServerStatus: () => ipcRenderer.invoke('check-server-status'),
+  
+  // Application functions
+  openPreferences: () => ipcRenderer.invoke('open-preferences'),
+  openPortConfig: () => ipcRenderer.invoke('open-port-config')
 });

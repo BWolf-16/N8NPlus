@@ -1,50 +1,18 @@
-# 🐳 N8NPlus - Local n8n Contain## 🌍 Platform Compatibility
+# 🐳 N8NPlus - Local n8n Container Manager
 
-N8NPlus is designed to work across multiple operating systems:
+N8NPlus is a powerful Electron-based desktop application that simplifies managing multiple n8n (workflow automation) Docker containers locally. With an intuitive React frontend and robust Express backend, it provides dynamic port management, conflict resolution, and seamless container lifecycle management.
 
-### ✅ Fully Supported Platforms
-- **Windows 10/11** (x64, ARM64)
-- **macOS 10.15+** (Intel, Apple Silicon)
-- **Linux** (Ubuntu, Debian, Fedora, CentOS, Arch Linux)
+## ⚡ Quick Start
 
-### 🔧 Platform-Specific Features
-- **Automatic dependency installation** on all platforms
-- **Native package managers**: Windows Installer, Homebrew (macOS), apt/dnf/pacman (Linux)
-- **Docker integration**: Docker Desktop (Windows/Mac), Docker Engine (Linux)
-- **Cross-platform file paths** and system commands
+**New in v1.0.3**: Fully automatic startup! No more batch files needed.
 
-### 🚀 Quick Setup (Recommended)
+Simply double-click the N8NPlus executable - the app will automatically:
+- 🔍 Find available ports
+- 🚀 Start backend and frontend servers 
+- 🔄 Connect to the interface
+- ✨ Be ready to use in seconds!
 
-N8NPlus now includes an **automatic dependency checker and installer** that will verify your system and install missing components for you!
-
-### Option 1: Auto-Setup (Cross-Platform)
-
-#### Windows:
-```bash
-# Run the setup script (will check and install everything)
-setup.bat
-# OR
-powershell -ExecutionPolicy Bypass -File setup.ps1
-# OR
-npm run setup-win
-```
-
-#### macOS/Linux:
-```bash
-# Make script executable and run setup
-chmod +x setup.sh && ./setup.sh
-# OR
-npm run setup-unix
-```
-
-#### Universal (All Platforms):
-```bash
-# Node.js-based setup (works everywhere)
-npm run setup
-```
-
-### Option 2: Manual Setup
-If you prefer to set up manually, follow the detailed installation steps below.N8NPlus is a powerful Electron-based desktop application that simplifies managing multiple n8n (workflow automation) Docker containers locally. With an intuitive React frontend and robust Express backend, it provides dynamic port management, conflict resolution, and seamless container lifecycle management.
+> 📖 **Detailed Guide**: See [AUTOMATIC_STARTUP.md](AUTOMATIC_STARTUP.md) for full documentation
 
 ## ✨ Features
 

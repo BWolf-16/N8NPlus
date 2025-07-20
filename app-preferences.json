@@ -1,0 +1,23 @@
+{
+  "startup": {
+    "autoRunOnPCStart": false,
+    "autoStartServersOnLaunch": true,
+    "minimizeToTray": false
+  },
+  "containers": {
+    "stopContainersOnAppClose": true,
+    "stopServersOnAppClose": true,
+    "confirmBeforeStoppingContainers": true
+  },
+  "docker": {
+    "autoConnectToLocal": true,
+    "showConnectionNotifications": true,
+    "retryFailedConnections": true
+  },
+  "ui": {
+    "showStartupSplash": true,
+    "minimizeOnClose": false,
+    "rememberWindowSize": true,
+    "theme": "auto"
+  }
+}

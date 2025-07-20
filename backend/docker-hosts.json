@@ -1,0 +1,13 @@
+[
+  {
+    "id": "local",
+    "name": "Local Docker",
+    "host": "localhost",
+    "port": 2376,
+    "protocol": "http",
+    "connected": true,
+    "lastError": null,
+    "isDefault": true,
+    "enabled": true
+  }
+]

@@ -1,1 +1,1 @@
-{"orphan-test":{"name":"orphan-test","port":5679,"status":"running","baseAddress":"localhost","dockerExists":true,"errorMessage":null}}
+{"orphan-test":{"name":"orphan-test","port":5679,"status":"running","baseAddress":"localhost","dockerExists":true,"errorMessage":null,"dockerHost":{"id":"local","name":"Local Docker","host":"localhost","port":2376,"protocol":"http","connected":true,"lastError":null,"isDefault":true,"enabled":true}}}

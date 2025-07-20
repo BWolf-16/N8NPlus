@@ -19,7 +19,7 @@ function isPortAvailable(port) {
 
 // Find the best available port using the specified sequence
 async function findBestPort() {
-  const preferredPorts = [8880, 8008, 8080, 8808];
+  const preferredPorts = [3001, 3002, 3003, 3004, 3005, 8880, 8008, 8080, 8808];
   
   console.log('🔍 Looking for available port...');
   

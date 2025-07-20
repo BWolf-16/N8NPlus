@@ -1,0 +1,8 @@
+{
+  "host": "localhost",
+  "port": 2376,
+  "protocol": "http",
+  "connected": true,
+  "lastError": null,
+  "autoDetect": true
+}
