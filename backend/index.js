@@ -7,12 +7,17 @@ const net = require("net");
 const portfinder = require("portfinder");
 const os = require("os");
 
-// Ensure backend always uses port 9999, ignore PORT env var
-delete process.env.PORT;
+// Use BACKEND_PORT environment variable if set, otherwise use default ports
+const preferredPorts = [9999, 9998, 9997, 9996, 9000];
+let port = parseInt(process.env.BACKEND_PORT) || 9999;
+
+// If the specified port is not in our preferred list, add it
+if (!preferredPorts.includes(port)) {
+  preferredPorts.unshift(port);
+}
 
 const app = express();
 const docker = new Docker();
-const port = 9999; // Backend always uses port 9999
 const DATA_FILE = path.join(__dirname, "containers.json");
 const CONFIG_FILE = path.join(__dirname, "config.json");
 
@@ -667,33 +672,63 @@ app.put("/api/edit/:name", async (req, res) => {
   }
 });
 
-app.listen(port, '0.0.0.0', async () => {
-  const networkInterfaces = os.networkInterfaces();
-  const addresses = [];
-  
-  for (const interfaceName in networkInterfaces) {
-    const networkInterface = networkInterfaces[interfaceName];
-    for (const alias of networkInterface) {
-      if (alias.family === 'IPv4' && !alias.internal) {
-        addresses.push(alias.address);
+// Function to start server with port fallback
+function startServer() {
+  const server = app.listen(port, '0.0.0.0', async () => {
+    const networkInterfaces = os.networkInterfaces();
+    const addresses = [];
+    
+    for (const interfaceName in networkInterfaces) {
+      const networkInterface = networkInterfaces[interfaceName];
+      for (const alias of networkInterface) {
+        if (alias.family === 'IPv4' && !alias.internal) {
+          addresses.push(alias.address);
+        }
       }
     }
-  }
-  
-  console.log(`🔧 N8NPlus backend listening on:`);
-  console.log(`   Local:    http://localhost:${port}`);
-  addresses.forEach(addr => {
-    console.log(`   Network:  http://${addr}:${port}`);
-  });
-  console.log(`🌐 Backend accessible from remote devices on network`);
-  
-  // Check for port conflicts on startup
-  try {
-    const conflicts = await checkPortConflicts();
-    if (conflicts.length > 0) {
-      console.log("⚠️  Port conflicts detected:", conflicts);
+    
+    console.log(`🔧 N8NPlus backend listening on:`);
+    console.log(`   Local:    http://localhost:${port}`);
+    addresses.forEach(addr => {
+      console.log(`   Network:  http://${addr}:${port}`);
+    });
+    console.log(`🌐 Backend accessible from remote devices on network`);
+    
+    // Check for port conflicts on startup
+    try {
+      const conflicts = await checkPortConflicts();
+      if (conflicts.length > 0) {
+        console.log("⚠️  Port conflicts detected:", conflicts);
+      }
+    } catch (err) {
+      console.error("Failed to check port conflicts:", err.message);
     }
-  } catch (err) {
-    console.error("Error checking port conflicts:", err);
-  }
-});
+  });
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.log(`❌ Port ${port} is already in use`);
+      // Try next preferred port
+      const currentIndex = preferredPorts.indexOf(port);
+      if (currentIndex < preferredPorts.length - 1) {
+        port = preferredPorts[currentIndex + 1];
+        console.log(`🔄 Trying port ${port}...`);
+        // Restart server on new port after a short delay
+        setTimeout(() => {
+          startServer();
+        }, 1000);
+      } else {
+        console.log(`❌ All preferred ports are in use. Please configure different ports.`);
+        process.exit(1);
+      }
+    } else {
+      console.error('❌ Server error:', err);
+      process.exit(1);
+    }
+  });
+
+  return server;
+}
+
+// Start the server
+startServer();
