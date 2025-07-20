@@ -55,12 +55,9 @@
       "src/**/*",
       "backend/**/*",
       "frontend/build/**/*",
-      "assets/icon.*",
-      "node/**/*"
+      "assets/icon.*"
     ],
-    "asarUnpack": [
-      "node/**/*"
-    ],
+    "asar": false,
     "win": {
       "target": [
         {

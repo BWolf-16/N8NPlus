@@ -142,14 +142,14 @@ function spawnNodeProcess(nodeExecutable, args, options) {
 function getNodeExecutable() {
   // Define possible bundled Node.js paths for different environments
   const possibleBundledPaths = [
-    // Production: unpacked from asar
-    path.join(__dirname, '..', 'app.asar.unpacked', 'node', 'node.exe'),
-    // Production: alternative unpacked location
-    path.join(process.resourcesPath, 'app.asar.unpacked', 'node', 'node.exe'),
     // Development: local node directory
     path.join(__dirname, 'node', 'node.exe'),
-    // Alternative production path
-    path.join(path.dirname(process.execPath), 'resources', 'app.asar.unpacked', 'node', 'node.exe')
+    // Production: resources/app directory (no asar)
+    path.join(process.resourcesPath, 'app', 'node', 'node.exe'),
+    // Alternative production path from main process
+    path.join(__dirname, '..', '..', 'resources', 'app', 'node', 'node.exe'),
+    // Another alternative path
+    path.join(path.dirname(process.execPath), 'resources', 'app', 'node', 'node.exe')
   ];
   
   // Try each bundled path
