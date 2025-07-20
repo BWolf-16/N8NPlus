@@ -10,11 +10,11 @@ let autoUpdater;
 // Function to find the best available icon
 function getAppIcon() {
   const assetsPath = path.join(__dirname, 'assets');
-  
+
   // Platform-specific icon preferences
   const platform = process.platform;
   let iconCandidates = [];
-  
+
   switch (platform) {
     case 'win32':
       iconCandidates = ['icon.ico', 'icon.png', 'icon.svg'];
@@ -26,9 +26,9 @@ function getAppIcon() {
       iconCandidates = ['icon.png', 'icon.svg'];
       break;
   }
-  
+
   console.log(`🎨 Looking for icon files for platform: ${platform}`);
-  
+
   // Check if assets directory exists
   if (!fs.existsSync(assetsPath)) {
     console.log('📁 Assets directory not found, creating it...');
@@ -37,7 +37,7 @@ function getAppIcon() {
     console.log('💡 Run "npm run icon-check" for detailed instructions');
     return undefined;
   }
-  
+
   // Try to find the best available icon
   for (const iconFile of iconCandidates) {
     const iconPath = path.join(assetsPath, iconFile);
@@ -58,7 +58,7 @@ function getAppIcon() {
 
 function createWindow() {
   const iconPath = getAppIcon();
-  
+
   const windowOptions = {
     width: 1400,
     height: 900,
@@ -74,20 +74,20 @@ function createWindow() {
   if (iconPath) {
     windowOptions.icon = iconPath;
   }
-  
+
   const win = new BrowserWindow(windowOptions);
 
   win.loadURL("http://localhost:3000");
-  
+
   // Initialize setup integration
   setupIntegration = new ElectronSetupIntegration();
-  
+
   // Initialize auto-updater
   autoUpdater = new AutoUpdater(win);
   
   // Create application menu with update check option
   createApplicationMenu(win);
-  
+
   // Check for updates on startup (only in production)
   if (!process.env.ELECTRON_IS_DEV) {
     autoUpdater.checkForUpdatesOnStartup();
@@ -209,7 +209,7 @@ function createApplicationMenu(mainWindow) {
 
 app.whenReady().then(() => {
   createWindow();
-  
+
   // Setup IPC handlers for auto-updater
   ipcMain.handle('check-for-updates', async () => {
     if (autoUpdater) {
@@ -218,7 +218,7 @@ app.whenReady().then(() => {
     }
     return { success: false, error: 'Auto-updater not initialized' };
   });
-  
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
