@@ -100,6 +100,38 @@ function loadAppPreferences() {
   }
 }
 
+// Helper function to spawn Node.js processes with better Windows compatibility
+function spawnNodeProcess(nodeExecutable, args, options) {
+  // First try: Use explicit shell path
+  try {
+    if (process.platform === 'win32') {
+      const shellPath = process.env.ComSpec || 'C:\\Windows\\System32\\cmd.exe';
+      if (fs.existsSync(shellPath)) {
+        return spawn(nodeExecutable, args, { ...options, shell: shellPath });
+      }
+    }
+  } catch (error) {
+    console.log('First spawn attempt failed, trying fallback...');
+  }
+  
+  // Second try: Use shell: true
+  try {
+    return spawn(nodeExecutable, args, { ...options, shell: true });
+  } catch (error) {
+    console.log('Second spawn attempt failed, trying without shell...');
+  }
+  
+  // Third try: No shell (for cases where Node.js is directly executable)
+  try {
+    // Remove quotes from nodeExecutable if present
+    const cleanNodeExecutable = nodeExecutable.replace(/"/g, '');
+    return spawn(cleanNodeExecutable, args, { ...options, shell: false });
+  } catch (error) {
+    console.log('All spawn attempts failed');
+    throw error;
+  }
+}
+
 // Helper function to find the correct Node.js executable
 function getNodeExecutable() {
   // On Windows, try common Node.js installation paths
@@ -402,16 +434,20 @@ function startBackendServer() {
     const nodeExecutable = getNodeExecutable();
     console.log(`🔧 Using Node.js executable: ${nodeExecutable}`);
     
-    // For paths with spaces, we need to quote them properly on Windows
+    // Use the robust spawn helper function
     const nodeArgs = ['index.js'];
     const spawnOptions = {
       cwd: path.join(__dirname, 'backend'),
-      shell: true,
       stdio: ['ignore', 'pipe', 'pipe'],
       env: env
     };
     
-    backendProcess = spawn(nodeExecutable, nodeArgs, spawnOptions);
+    try {
+      backendProcess = spawnNodeProcess(nodeExecutable, nodeArgs, spawnOptions);
+    } catch (error) {
+      console.error('❌ Failed to spawn backend process:', error);
+      return Promise.reject(new Error(`Failed to start backend server: ${error.message}`));
+    }
 
     let resolved = false;
     let startupOutput = '';
@@ -518,16 +554,24 @@ function startFrontendServer() {
     const nodeExecutable = getNodeExecutable();
     console.log(`🌐 Using Node.js executable: ${nodeExecutable}`);
     
-    // For paths with spaces, we need to quote them properly on Windows
+    // Use the robust spawn helper function
     const nodeArgs = ['start-with-port.js'];
     const spawnOptions = {
       cwd: path.join(__dirname, 'frontend'),
-      shell: true,
       stdio: ['ignore', 'pipe', 'pipe'],
       env: env
     };
     
-    frontendProcess = spawn(nodeExecutable, nodeArgs, spawnOptions);
+    try {
+      frontendProcess = spawnNodeProcess(nodeExecutable, nodeArgs, spawnOptions);
+    } catch (error) {
+      console.error('❌ Failed to spawn frontend process:', error);
+      if (!resolved) {
+        resolved = true;
+        reject(new Error(`Failed to start frontend server: ${error.message}`));
+        return;
+      }
+    }
 
     let resolved = false;
 

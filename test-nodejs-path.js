@@ -69,10 +69,32 @@ const { spawn } = require('child_process');
 
 console.log('\n🧪 Testing spawn functionality...');
 try {
-  const testProcess = spawn(nodeExecutable, ['--version'], {
-    shell: true,
-    stdio: ['ignore', 'pipe', 'pipe']
-  });
+  // Try multiple spawn approaches for better compatibility
+  let testProcess;
+  
+  if (process.platform === 'win32') {
+    // First try: Use explicit ComSpec
+    const shellPath = process.env.ComSpec || 'C:\\Windows\\System32\\cmd.exe';
+    console.log(`Using shell: ${shellPath}`);
+    
+    try {
+      testProcess = spawn(nodeExecutable, ['--version'], {
+        shell: shellPath,
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
+    } catch (error) {
+      console.log('First attempt failed, trying shell: true...');
+      testProcess = spawn(nodeExecutable, ['--version'], {
+        shell: true,
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
+    }
+  } else {
+    testProcess = spawn(nodeExecutable, ['--version'], {
+      shell: true,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+  }
 
   testProcess.stdout.on('data', (data) => {
     console.log(`✅ Node.js version check successful: ${data.toString().trim()}`);
