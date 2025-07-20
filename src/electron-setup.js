@@ -1,7 +1,7 @@
 const { ipcMain, dialog, shell } = require('electron');
 const os = require('os');
-const DependencyChecker = require('./src/dependency-checker');
-const SetupManager = require('./src/setup-manager');
+const DependencyChecker = require('./dependency-checker');
+const SetupManager = require('./setup-manager');
 
 class ElectronSetupIntegration {
   constructor() {

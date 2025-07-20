@@ -1,1 +1,1 @@
-{"test":{"name":"test","port":5678,"status":"stopped","baseAddress":"localhost"}}
+{"orphan-test":{"name":"orphan-test","port":5679,"status":"running","baseAddress":"localhost","dockerExists":true,"errorMessage":null}}

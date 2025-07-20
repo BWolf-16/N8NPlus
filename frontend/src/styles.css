@@ -20,6 +20,45 @@ header {
   align-items: center;
   gap: 1rem;
 }
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--card);
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.status-indicator {
+  font-size: 0.8rem;
+}
+
+.status-indicator.connected {
+  color: #4caf50;
+}
+
+.status-indicator.connecting {
+  color: #ff9800;
+  animation: pulse 1.5s infinite;
+}
+
+.status-indicator.disconnected {
+  color: #f44336;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.host-info {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
 .base-address-section {
   display: flex;
   align-items: center;
@@ -97,16 +136,6 @@ button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-.window-indicator {
-  font-size: 0.8rem;
-  opacity: 0.7;
-}
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -174,6 +203,23 @@ button {
 button:hover {
   background: #666;
 }
+
+/* Button-specific styling */
+.edit-btn {
+  background: #ff9800 !important;
+}
+
+.edit-btn:hover {
+  background: #e68900 !important;
+}
+
+.delete-btn {
+  background: #f44336 !important;
+}
+
+.delete-btn:hover {
+  background: #d32f2f !important;
+}
 .container-section {
   margin-top: 1rem;
 }
@@ -212,6 +258,33 @@ button:hover {
   height: 10px;
   background: red;
   border-radius: 50%;
+}
+.dot-orange {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: orange;
+  border-radius: 50%;
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.status-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.window-indicator {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+.warning-indicator {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  cursor: help;
 }
 .viewer {
   position: absolute;
@@ -480,4 +553,18 @@ button:hover {
   color: var(--text);
   margin-bottom: 0.5rem;
   line-height: 1.4;
+}
+
+/* Loading indicator */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.loading-indicator span {
+  animation: pulse 1.5s infinite;
 }

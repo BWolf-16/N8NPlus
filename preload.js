@@ -10,13 +10,19 @@ contextBridge.exposeInMainWorld('electronSetup', {
   startDocker: () => ipcRenderer.invoke('start-docker')
 });
 
-// Expose auto-updater functions to the renderer process
+// Expose auto-updater and network functions to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
+  // Auto-updater functions
   onUpdateStatus: (callback) => {
     ipcRenderer.on('update-status', callback);
   },
   removeUpdateStatusListener: (callback) => {
     ipcRenderer.removeListener('update-status', callback);
   },
-  checkForUpdates: () => ipcRenderer.invoke('check-for-updates')
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  
+  // Network functions
+  connectToHost: (host, port) => ipcRenderer.invoke('connect-to-host', { host, port }),
+  scanNetwork: () => ipcRenderer.invoke('scan-network'),
+  getCurrentHost: () => ipcRenderer.invoke('get-current-host')
 });
