@@ -17,6 +17,16 @@ class AutoUpdater {
     }
 
     setupAutoUpdater() {
+        // Configure auto-updater for GitHub releases
+        if (this.isPackaged()) {
+            autoUpdater.setFeedURL({
+                provider: 'github',
+                owner: 'BWolf-16',
+                repo: 'N8NPlus',
+                releaseType: 'release'
+            });
+        }
+
         // Auto-updater event handlers
         autoUpdater.on('checking-for-update', () => {
             log.info('Checking for update...');
@@ -36,7 +46,27 @@ class AutoUpdater {
 
         autoUpdater.on('error', (err) => {
             log.error('Error in auto-updater:', err);
-            this.sendStatusToWindow('Error checking for updates');
+            
+            // Provide more specific error handling
+            if (err.message && err.message.includes('ENOTFOUND')) {
+                this.sendStatusToWindow('No internet connection for updates');
+                log.info('Update check failed: No internet connection');
+            } else if (err.message && err.message.includes('404')) {
+                this.sendStatusToWindow('No releases found - app is up to date');
+                log.info('Update check: No releases published yet');
+            } else if (err.message && err.message.includes('CERT')) {
+                this.sendStatusToWindow('Certificate error - update check failed');
+                log.info('Update check failed: Certificate issue');
+            } else {
+                this.sendStatusToWindow('Error checking for updates');
+                log.error('Update check failed with error:', err.message);
+            }
+            
+            // Don't show error dialog for development builds
+            if (!this.isPackaged()) {
+                log.info('Skipping error dialog in development mode');
+                return;
+            }
         });
 
         autoUpdater.on('download-progress', (progressObj) => {
@@ -63,6 +93,30 @@ class AutoUpdater {
         if (this.mainWindow && this.mainWindow.webContents) {
             this.mainWindow.webContents.send('update-status', text);
         }
+    }
+
+    // Check if app is packaged (production) or running in development
+    isPackaged() {
+        return require('electron').app.isPackaged;
+    }
+
+    // Check internet connectivity
+    async checkInternetConnection() {
+        const net = require('net');
+        return new Promise((resolve) => {
+            const socket = net.createConnection({ port: 443, host: 'github.com' });
+            socket.on('connect', () => {
+                socket.destroy();
+                resolve(true);
+            });
+            socket.on('error', () => {
+                resolve(false);
+            });
+            socket.setTimeout(5000, () => {
+                socket.destroy();
+                resolve(false);
+            });
+        });
     }
 
     async showUpdateAvailableDialog(info) {
@@ -106,15 +160,99 @@ class AutoUpdater {
     // Manual check for updates (called from menu or UI)
     checkForUpdates() {
         log.info('Manual update check triggered');
-        autoUpdater.checkForUpdatesAndNotify();
+        
+        // Skip update check in development mode
+        if (!this.isPackaged()) {
+            log.info('Skipping update check in development mode');
+            this.sendStatusToWindow('Update check disabled in development mode');
+            return {
+                success: false,
+                message: 'Update checking is disabled in development mode'
+            };
+        }
+        
+        // Check for internet connectivity first
+        this.checkInternetConnection().then(connected => {
+            if (!connected) {
+                this.sendStatusToWindow('No internet connection for updates');
+                log.info('Update check failed: No internet connection');
+                return;
+            }
+            
+            try {
+                autoUpdater.checkForUpdatesAndNotify();
+            } catch (error) {
+                log.error('Failed to check for updates:', error);
+                this.sendStatusToWindow('Failed to check for updates');
+            }
+        }).catch(error => {
+            log.error('Error checking internet connection:', error);
+            this.sendStatusToWindow('Network error - cannot check for updates');
+        });
+        
+        return {
+            success: true,
+            message: 'Checking for updates...'
+        };
+    }
+
+    // Debug method to test update checking
+    debugUpdateCheck() {
+        log.info('=== DEBUG: Update Check ===');
+        log.info('App version:', require('../package.json').version);
+        log.info('Is packaged:', this.isPackaged());
+        log.info('GitHub repo: BWolf-16/N8NPlus');
+        
+        if (!this.isPackaged()) {
+            log.info('DEBUG: In development mode, update check disabled');
+            return {
+                success: false,
+                message: 'Development mode - updates disabled'
+            };
+        }
+        
+        // Force a check regardless of connectivity
+        try {
+            autoUpdater.checkForUpdatesAndNotify();
+            return {
+                success: true,
+                message: 'Debug update check initiated'
+            };
+        } catch (error) {
+            log.error('DEBUG: Update check failed:', error);
+            return {
+                success: false,
+                message: 'Debug update check failed'
+            };
+        }
     }
 
     // Check for updates on app startup (with delay)
     checkForUpdatesOnStartup() {
+        // Skip update check in development mode
+        if (!this.isPackaged()) {
+            log.info('Skipping startup update check in development mode');
+            return;
+        }
+        
         // Wait 10 seconds after startup to check for updates
         setTimeout(() => {
             log.info('Checking for updates on startup');
-            autoUpdater.checkForUpdatesAndNotify();
+            
+            this.checkInternetConnection().then(connected => {
+                if (!connected) {
+                    log.info('Startup update check: No internet connection');
+                    return;
+                }
+                
+                try {
+                    autoUpdater.checkForUpdatesAndNotify();
+                } catch (error) {
+                    log.error('Startup update check failed:', error);
+                }
+            }).catch(error => {
+                log.error('Error during startup update check:', error);
+            });
         }, 10000);
     }
 }
